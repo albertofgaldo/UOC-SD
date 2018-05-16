@@ -17,7 +17,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this code.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 package recipes_service.tsae.sessions;
+
 
 import java.io.IOException;
 import java.net.Socket;
@@ -27,21 +29,17 @@ import java.util.Vector;
 
 import communication.ObjectInputStream_DS;
 import communication.ObjectOutputStream_DS;
-
 import java.util.ArrayList;
-
 import recipes_service.ServerData;
 import recipes_service.communication.Message;
 import recipes_service.communication.MessageAErequest;
 import recipes_service.communication.MessageEndTSAE;
 import recipes_service.communication.MessageOperation;
 import recipes_service.communication.MsgType;
-
 import recipes_service.data.AddOperation;
 import recipes_service.data.Operation;
 import recipes_service.data.OperationType;
 import recipes_service.data.RemoveOperation;
-
 import recipes_service.tsae.data_structures.TimestampMatrix;
 import recipes_service.tsae.data_structures.TimestampVector;
 
@@ -84,42 +82,34 @@ public class TSAESessionPartnerSide extends Thread{
 			lsim.log(Level.TRACE, "[TSAESessionPartnerSide] [session: "+current_session_number+"] received message: "+ msg);
 			if (msg.type() == MsgType.AE_REQUEST){
 				// ...
-				
+				MessageAErequest aeMsg = (MessageAErequest) msg;
 	            // send operations
 					// ...
-				MessageAErequest aeMsg = (MessageAErequest) msg;
-				
-				TimestampMatrix localAck;
-                TimestampVector localSummary;
-				
-				synchronized (serverData) {
-                    localSummary = serverData.getSummary().clone();
-                    serverData.getAck().update(serverData.getId(), localSummary);
-                    localAck = serverData.getAck().clone();
-                }
-				
-				for (Operation op : serverData.getLog().listNewer(aeMsg.getSummary())) {
+				/*
+					for (Operation op : serverData.getLog().listNewer(aeMsg.getSummary())) {
                     out.writeObject(new MessageOperation(op));
-                }
+					}
+				*/
 					msg.setSessionNumber(current_session_number);
 					out.writeObject(msg);
 					lsim.log(Level.TRACE, "[TSAESessionPartnerSide] [session: "+current_session_number+"] sent message: "+ msg);
 
 		
 				// send to originator: local's summary and ack
-				 localSummary = null;
-				 localAck = null;
+				TimestampVector localSummary = null;
+				TimestampMatrix localAck = null;
 				msg = new MessageAErequest(localSummary, localAck);
 				msg.setSessionNumber(current_session_number);
 	 	        out.writeObject(msg);
 				lsim.log(Level.TRACE, "[TSAESessionPartnerSide] [session: "+current_session_number+"] sent message: "+ msg);
 
 	            // receive operations
-				List<MessageOperation> operations = new ArrayList<>();
+				List<MessageOperation> operations = new ArrayList<MessageOperation>();
 				msg = (Message) in.readObject();
 				lsim.log(Level.TRACE, "[TSAESessionPartnerSide] [session: "+current_session_number+"] received message: "+ msg);
 				while (msg.type() == MsgType.OPERATION){
 					// ...
+					operations.add((MessageOperation) msg);
 					msg = (Message) in.readObject();
 					lsim.log(Level.TRACE, "[TSAESessionPartnerSide] [session: "+current_session_number+"] received message: "+ msg);
 				}

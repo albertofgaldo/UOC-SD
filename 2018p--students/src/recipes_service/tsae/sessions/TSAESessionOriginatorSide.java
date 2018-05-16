@@ -111,12 +111,13 @@ public class TSAESessionOriginatorSide extends TimerTask{
 
 			TimestampVector localSummary = null;
 			TimestampMatrix localAck = null;
-			
+			/*
 			 synchronized (serverData) {
                 localSummary = serverData.getSummary().clone();
                 serverData.getAck().update(serverData.getId(), localSummary);
                 localAck = serverData.getAck().clone();
             }
+            */
 			
 			// Send to partner: local's summary and ack
 			Message	msg = new MessageAErequest(localSummary, localAck);
@@ -125,7 +126,7 @@ public class TSAESessionOriginatorSide extends TimerTask{
 			lsim.log(Level.TRACE, "[TSAESessionOriginatorSide] [session: "+current_session_number+"] sent message: "+msg);
 
             // receive operations from partner
-			List<MessageOperation> operations = new ArrayList<>();
+			List<MessageOperation> operations = new ArrayList<MessageOperation>();
 			msg = (Message) in.readObject();
 			lsim.log(Level.TRACE, "[TSAESessionOriginatorSide] [session: "+current_session_number+"] received message: "+msg);
 			while (msg.type() == MsgType.OPERATION){
@@ -143,11 +144,11 @@ public class TSAESessionOriginatorSide extends TimerTask{
 				
 				//...
 				MessageAErequest aeMsg = (MessageAErequest) msg;
-				
+				/*
 				for (Operation op : serverData.getLog().listNewer(aeMsg.getSummary())) {
                     out.writeObject(new MessageOperation(op));
                 }
-				
+				*/
 					msg.setSessionNumber(current_session_number);
 					out.writeObject(msg);
 					lsim.log(Level.TRACE, "[TSAESessionOriginatorSide] [session: "+current_session_number+"] sent message: "+msg);
